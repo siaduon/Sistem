@@ -9,6 +9,14 @@ if (!isEnrolled($pdo, $userId, $courseId)) { die('Enroll course dulu.'); }
 
 if(isset($_GET['complete'])){
     $missionId=(int)$_GET['complete'];
+    $missionCheck = $pdo->prepare('SELECT id FROM missions WHERE id = ? AND course_id = ?');
+    $missionCheck->execute([$missionId, $courseId]);
+
+    if(!$missionCheck->fetch()){
+        http_response_code(400);
+        die('Mission tidak valid untuk course ini.');
+    }
+
     $check=$pdo->prepare('SELECT id FROM user_missions WHERE user_id=? AND mission_id=?');
     $check->execute([$userId,$missionId]);
     if(!$check->fetch()){
