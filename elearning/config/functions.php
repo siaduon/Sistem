@@ -8,11 +8,36 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function appBasePath(): string
+{
+    static $basePath;
+
+    if ($basePath !== null) {
+        return $basePath;
+    }
+
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $pos = strpos($scriptName, '/elearning/');
+
+    if ($pos === false) {
+        $basePath = '/elearning';
+    } else {
+        $basePath = substr($scriptName, 0, $pos) . '/elearning';
+    }
+
+    return $basePath;
+}
+
+function redirectTo(string $path): void
+{
+    header('Location: ' . appBasePath() . '/' . ltrim($path, '/'));
+    exit;
+}
+
 function requireLogin(): void
 {
     if (empty($_SESSION['user'])) {
-        header('Location: /elearning/auth/login.php');
-        exit;
+        redirectTo('auth/login.php');
     }
 }
 
@@ -21,11 +46,10 @@ function requireRole(string $role): void
     requireLogin();
     if (($_SESSION['user']['role'] ?? '') !== $role) {
         if ($_SESSION['user']['role'] === 'admin') {
-            header('Location: /elearning/admin/dashboard.php');
+            redirectTo('admin/dashboard.php');
         } else {
-            header('Location: /elearning/user/dashboard.php');
+            redirectTo('user/dashboard.php');
         }
-        exit;
     }
 }
 
@@ -33,11 +57,10 @@ function redirectByRole(): void
 {
     if (!empty($_SESSION['user'])) {
         if ($_SESSION['user']['role'] === 'admin') {
-            header('Location: /elearning/admin/dashboard.php');
+            redirectTo('admin/dashboard.php');
         } else {
-            header('Location: /elearning/user/dashboard.php');
+            redirectTo('user/dashboard.php');
         }
-        exit;
     }
 }
 
